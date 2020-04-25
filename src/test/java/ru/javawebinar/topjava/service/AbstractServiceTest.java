@@ -1,21 +1,15 @@
 package ru.javawebinar.topjava.service;
 
-import org.junit.AfterClass;
-import org.junit.Rule;
-import org.junit.rules.Stopwatch;
-import org.junit.runner.Description;
 import org.junit.runner.RunWith;
-import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.jdbc.SqlConfig;
 import org.springframework.test.context.junit4.SpringRunner;
 import ru.javawebinar.topjava.ActiveDbProfileResolver;
-
-import java.util.concurrent.TimeUnit;
-
-import static org.slf4j.LoggerFactory.getLogger;
+import ru.javawebinar.topjava.Profiles;
 
 import static org.junit.Assert.assertThrows;
 import static ru.javawebinar.topjava.util.ValidationUtil.getRootCause;
@@ -28,6 +22,14 @@ import static ru.javawebinar.topjava.util.ValidationUtil.getRootCause;
 @Sql(scripts = "classpath:db/populateDB.sql", config = @SqlConfig(encoding = "UTF-8"))
 @ActiveProfiles(resolver = ActiveDbProfileResolver.class)
 abstract public class AbstractServiceTest {
+
+    @Autowired
+    public Environment env;
+
+    public boolean isJpaBased() {
+//        return Arrays.stream(env.getActiveProfiles()).noneMatch(Profiles.JDBC::equals);
+        return env.acceptsProfiles(org.springframework.core.env.Profiles.of(Profiles.JPA, Profiles.DATAJPA));
+    }
 
     //  Check root cause in JUnit: https://github.com/junit-team/junit4/pull/778
     public <T extends Throwable> void validateRootCause(Runnable runnable, Class<T> exceptionClass) {
